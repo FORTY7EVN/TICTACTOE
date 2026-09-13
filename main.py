@@ -1,5 +1,5 @@
 import pygame as pg
-from libs.config import dt, fps, isGameRunning, numRows, dictGrid, resolution,ux,uy
+from libs.config import dt, fps, isGameRunning, numRows, dictCells, resolution,ux,uy,drawBoard
 
 screen = pg.display.set_mode(resolution,pg.FULLSCREEN)
 
@@ -14,13 +14,7 @@ while isGameRunning:
             if event.key == pg.K_ESCAPE:
                 isGameRunning = False
     screen.fill('black')
-    pg.draw.rect(
-                screen,
-                "white",
-                (ux(500),
-                 uy(500),
-                    50,50
-                ))
+    drawBoard(screen)
 
     pg.display.flip()
     dt = clock.tick(240) / 1000
