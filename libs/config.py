@@ -14,32 +14,26 @@ def ux(percentage):
 def uy(percentage):
     return int(scrH * percentage / 1000)
 
-dt = 0
-fps = 240
-isGameRunning = True
-numRows = 3
-maxTurns = numRows * numRows
-
-board =  uy(600)
-gap = (board // numRows) // 10
-
-
-
-currentTurnCount = 0
-
-idPlayer = 1
-idWinner = 2
-
-wins = [0,0]
-
-dictCells = {"rect" : {}, "value" : {}}
+dt = 0 #delta time
+fps = 240 #fps
+isGameRunning = True #game state
+numRows = 6 #number of rows
+maxTurns = numRows * numRows #maxturns allowed
+board =  uy(600) #only for scaleRects["board"]
+gap = (board // numRows) // 10 #only for scaleRects["gap"]
+currentTurnCount = 0 #turnscount
+idPlayer = 1 #id current player
+idWinner = 2 #id winner
+wins = [0,0] #wins , 0 is for O and 1 is for X
+dictCells = {"rect" : {}, "value" : {}} #dictionary to store rects and the values
 
 #dictCells["rect"][key]
 #dictCells["value"][key]
+#scaleRects["cell"] = 0
 
 #for key in dictCells["rect"]:
 #        rect_value = dictGrid["rect"][key]
-#        state_value = dictGrid["value"][key]d
+#        state_value = dictGrid["value"][key]
 
 
 scaleRects = {
@@ -56,7 +50,41 @@ coords = {
     "cell": lambda w, h: (coordCell(w), coordCell(h)),# lambda delays the calculation until you actually pass w and h to it
 }
 
+xImage = None
+oImage = None
+
+
+def load_assets():
+    global xImage, oImage
+    xImage = pg.image.load('images/X.png').convert_alpha()
+    oImage = pg.image.load('images/O.png').convert_alpha()
+    xImage = pg.transform.scale(xImage, (scaleRects["cell"] - scaleRects["gap"], scaleRects["cell"] - scaleRects["gap"]))
+    oImage = pg.transform.scale(oImage, (scaleRects["cell"] - scaleRects["gap"], scaleRects["cell"] - scaleRects["gap"]))
+
+
+# --- 1. INITIALIZATION (Run this ONCE before your game loop) ---
+def initBoard():
+    for h in range(numRows):
+        for w in range(numRows):
+            key = f"{h}{w}"
+            
+            # Unpack offsets directly from your lambda function
+            cell_offset_x, cell_offset_y = coords["cell"](w, h)
+            
+            x = int(coords["board"][0] + cell_offset_x)
+            y = int(coords["board"][1] + cell_offset_y)
+            width = scaleRects["cell"]
+            height = scaleRects["cell"]
+            
+            # Create and store the Pygame Rect object
+            dictCells["rect"][key] = pg.Rect(x, y, width, height)
+            
+            # Initialize the game state (1 for X, -1 for O, and 0 for nothing)
+            dictCells["value"][key] = 0
+
+# --- 2. RENDERING (Run this EVERY FRAME inside your game loop) ---
 def drawBoard(screen):
+    # Draw the main green board background
     dictCells["rect"]["board"] = pg.draw.rect(
         screen,
         "green",
@@ -67,28 +95,35 @@ def drawBoard(screen):
             scaleRects["board"],
         ),
     )
+    
+    # Iterate through the grid and draw the pre-calculated Rects
     for h in range(numRows):
         for w in range(numRows):
             key = f"{h}{w}"
             
-            # 1. Unpack your X and Y offsets directly from your lambda function
-            cell_offset_x, cell_offset_y = coords["cell"](w, h)
-            
-            # 2. Add them to the board's starting position
-            dictCells["rect"][key] = pg.draw.rect(
-                screen,
-                "white",
-                (
-                    int(coords["board"][0] + cell_offset_x),
-                    int(coords["board"][1] + cell_offset_y),
-                    scaleRects["cell"],
-                    scaleRects["cell"]
-                )
-            )
+            # Draw each white cell using the saved Rect
+            pg.draw.rect(screen, "white", dictCells["rect"][key])
 
+def mark(key):
+    global idPlayer
 
+    if key not in dictCells["value"] or dictCells["value"][key] != 0: #breaks the func if key doesnt exist or value is not 0
+        return
 
-    
-#scaleRects["cell"] = 0
+    dictCells["value"][key] = idPlayer
+    print(key)
+    idPlayer = -1 if idPlayer == 1 else 1
 
+def drawMarks(screen):
+    for key, value in dictCells["value"].items():
+        if value == 0:
+            continue
 
+        rect = dictCells["rect"][key]
+        x = rect.x + scaleRects["gap"] // 2
+        y = rect.y + scaleRects["gap"] // 2
+
+        if value == 1:
+            screen.blit(xImage, (x, y))
+        elif value == -1:
+            screen.blit(oImage, (x, y))
