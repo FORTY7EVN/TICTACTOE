@@ -9,9 +9,8 @@ from libs.config import (initBoard, draw, mark, load_assets)
 
 # Start the game window and prepare all image assets before drawing.
 screen = pg.display.set_mode(resolution, pg.FULLSCREEN)
-load_assets()
-
 clock = pg.time.Clock()
+load_assets()
 initBoard()
 
 # Main game loop: process input, update board state, and render every frame.
