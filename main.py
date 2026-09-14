@@ -1,14 +1,20 @@
 import pygame as pg
-from libs.config import (
-    dt, fps, isGameRunning, numRows, dictCells, resolution,
-    mark, ux, uy, drawBoard, initBoard, drawMarks, load_assets
+from libs.vars import (
+    resolution, fps,
+    dictCells,
+    isGameRunning,
 )
+from libs.colors import *
+from libs.config import (initBoard, draw, mark, load_assets)
 
+# Start the game window and prepare all image assets before drawing.
 screen = pg.display.set_mode(resolution, pg.FULLSCREEN)
 load_assets()
 
 clock = pg.time.Clock()
 initBoard()
+
+# Main game loop: process input, update board state, and render every frame.
 while isGameRunning:
     for event in pg.event.get():
         if event.type == pg.QUIT:
@@ -19,16 +25,17 @@ while isGameRunning:
                 isGameRunning = False
 
         elif event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
-            posMouse = pg.mouse.get_pos()
+            # Use the click position from the event to avoid stale mouse data
+            # when the game is running in fullscreen mode.
+            posMouse = event.pos
             for key, rect in dictCells["rect"].items():
-                if key != "board" and rect.collidepoint(posMouse):
+                if rect.collidepoint(posMouse):
                     mark(key)
                     break
 
-    screen.fill('black')
-    drawBoard(screen)
-    drawMarks(screen)
+    screen.fill(color_background)
+    draw(screen)
     pg.display.flip()
-    dt = clock.tick(240) / 1000
+    clock.tick(fps)
 
 pg.quit()
