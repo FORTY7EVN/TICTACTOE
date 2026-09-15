@@ -1,67 +1,101 @@
+from box import Box
 import pygame as pg
+
 pg.display.init()
 pg.font.init()
 
 # Store the display size once so the board can scale correctly on any screen.
 scr = pg.display.Info()
-scrW = scr.current_w
-scrH = scr.current_h
-resolution = (scrW, scrH)
+display = Box({"scrW": scr.current_w, "scrH": scr.current_h})
 
-print("width:", scrW)
-print("height:", scrH)
+
+# ===================================================================
+rows = 12
+max_turns = rows * rows
+# ===================================================================
+
+setting = Box(
+    {
+        "dt": 0, "fps": 240,
+        "rows": rows, "max_turns": max_turns, "turns": 0,
+        "player": 1, "winner": 2, "wins": [0, 0],
+        "isGameRunning": True
+    }
+)
 
 
 def ux(percentage):
-    return int(scrW * percentage / 1000)
+    return int(display.scrW * percentage / 1000)
 
 
 def uy(percentage):
-    return int(scrH * percentage / 1000)
+    return int(display.scrH * percentage / 1000)
 
 
-# Core game state used throughout the app.
-dt = 0
-fps = 240
-isGameRunning = True
-numRows = 12
-maxTurns = numRows * numRows
-numTurns = 0
-idPlayer = 1
-idWinner = 2
-wins = [0, 0]
-
-
-# Asset references loaded when the game starts.
-xImage = None
-oImage = None
-xImage_white = None
-oImage_white = None
-rectBoard = None
-roboto_surface = None
-roboto_txt_rect = None
-roboto_w = None
-roboto_h = None
-
-# Board sizing is computed from the screen size to keep the layout responsive.
+# ===================================================================
 scale_board = uy(600)
-scale_gap = max(1, (scale_board // numRows) // 10)
-scale_cell = (scale_board - (scale_gap * (numRows + 1))) // numRows
-scale_mark = scale_cell - scale_gap
-scale_text = scale_mark
+scale_gap = max(1, (scale_board // setting.rows) // 10)
+scale_cell = (scale_board - (scale_gap * (setting.rows + 1))) // setting.rows
+# ===================================================================
+
+asset = Box(
+    {
+        "xImage": None,
+        "oImage": None,
+        "xImage_white": None,
+        "oImage_white": None,
+        "rectBoard": None,
+        "roboto_surface": None,
+        "roboto_txt_rect": None,
+        "roboto_w": None,
+        "roboto_h": None,
+    }
+)
+# Asset references loaded when the game starts.
 
 
-# font_regular_path = "fonts/roboto/static/RobotoMono-Regular.ttf"
-# font_bold_path = "fonts/roboto/static/RobotoMono-Bold.ttf"
-# font_italic_path = "fonts/roboto/static/RobotoMono-Italic.ttf"
+scale = Box(
+    {
+        "board": uy(600),
+        "gap": max(1, (scale_board // setting.rows) // 10),
+        "cell": (scale_board - (scale_gap * (setting.rows + 1))) // setting.rows,
+        "mark": scale_cell - scale_gap,
+        "text": scale_cell - scale_gap
+    })
+
+coord = Box(
+    {
+        "board": {
+            "x": ux(500) - (scale.board // 2),
+            "y": uy(500) - (scale.board // 2)}
+    })
+
+path = Box(
+    {
+        "font": {
+            "roboto": {
+                "regular": "fonts/roboto/static/RobotoMono-Regular.ttf",
+                "bold": "fonts/roboto/static/RobotoMono-Bold.ttf",
+                "italic": "fonts/roboto/static/RobotoMono-Italic.ttf"
+            }
+        }
+    }
+)
+
+font = Box(
+    {
+        "scaled": {
+            "roboto": {
+                "regular": pg.font.Font(path.font.roboto.regular, scale.text),
+                "bold": pg.font.Font(path.font.roboto.bold, scale.text),
+                "italic": pg.font.Font(path.font.roboto.italic, scale.text)
+            }
+        }
+    }
+)
 
 # roboto_regular_scaled = pg.font.Font(font_regular_path, scale_text)
 # roboto_bold_scaled = pg.font.Font(font_bold_path, scale_text)
 # roboto_italic_scaled = pg.font.Font(font_italic_path, scale_text)
 
-
-coords_board = (ux(500) - (scale_board // 2),
-                uy(500) - (scale_board // 2))
-
 dictCells = {"rect": {}, "value": {}}
-font = pg.font.SysFont(None, scale_text)
