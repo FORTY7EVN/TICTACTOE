@@ -32,11 +32,20 @@ def uy(percentage):
     return int(display.scrH * percentage / 1000)
 
 
-# ===================================================================
-scale_board = uy(600)
-scale_gap = max(1, (scale_board // setting.rows) // 10)
-scale_cell = (scale_board - (scale_gap * (setting.rows + 1))) // setting.rows
-# ===================================================================
+# Layout values are derived once and reused.
+scale = Box(
+    {
+        "board": uy(600),
+        "gap": 1,
+        "cell": 0,
+        "mark": 0,
+        "text": 0
+    }
+)
+scale.gap = max(1, (scale.board // setting.rows) // 10)
+scale.cell = (scale.board - (scale.gap * (setting.rows + 1))) // setting.rows
+scale.mark = scale.cell - scale.gap
+scale.text = scale.cell - scale.gap
 
 asset = Box(
     {
@@ -53,22 +62,14 @@ asset = Box(
 )
 # Asset references loaded when the game starts.
 
-
-scale = Box(
-    {
-        "board": uy(600),
-        "gap": max(1, (scale_board // setting.rows) // 10),
-        "cell": (scale_board - (scale_gap * (setting.rows + 1))) // setting.rows,
-        "mark": scale_cell - scale_gap,
-        "text": scale_cell - scale_gap
-    })
-
 coord = Box(
     {
         "board": {
             "x": ux(500) - (scale.board // 2),
-            "y": uy(500) - (scale.board // 2)}
-    })
+            "y": uy(500) - (scale.board // 2)
+        }
+    }
+)
 
 path = Box(
     {
